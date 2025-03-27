@@ -233,9 +233,18 @@ class SocketService {
       this.socket.on('tv-updated', callback);
     }
   }
+
+  // Método genérico para emitir eventos
+  emit(event: string, data: any): void {
+    if (this.socket && this.connected) {
+      this.socket.emit(event, data);
+    } else {
+      console.error(`Não foi possível emitir o evento "${event}". Socket desconectado.`);
+    }
+  }
 }
 
 // Criar uma instância única do serviço de Socket
 const socketService = new SocketService();
 
-export default socketService; 
+export default socketService;

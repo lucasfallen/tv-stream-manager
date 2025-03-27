@@ -35,44 +35,13 @@ interface DashboardProviderProps {
   children: ReactNode;
 }
 
-// Dashboards iniciais baseados no seu arquivo HTML
 const initialDashboards: Dashboard[] = [
   {
     id: generateId(),
     title: "Acompanhamento de Operações",
     url: "https://d2msppbxywc01b.cloudfront.net/", 
     duration: 120
-  },
-  {
-    id: generateId(),
-    title: "VOP",
-    url: "https://app.powerbi.com/view?r=eyJrIjoiNTczYzA5YTQtZDRiZS00M2MxLWIyMjItNjMyNDA1YzFmMzMzIiwidCI6IjBiNjIxMjhlLWQwNWMtNGFhZi1iZDJmLWY5YjEwNjMyNWZmMiJ9&pageName=7bb75fff127c52e17b68", 
-    duration: 60
-  },
-  {
-    id: generateId(),
-    title: "VOP 2",
-    url: "https://app.powerbi.com/view?r=eyJrIjoiNTczYzA5YTQtZDRiZS00M2MxLWIyMjItNjMyNDA1YzFmMzMzIiwidCI6IjBiNjIxMjhlLWQwNWMtNGFhZi1iZDJmLWY5YjEwNjMyNWZmMiJ9&pageName=ReportSection55f7ad23034453b8a551", 
-    duration: 60
-  },
-  {
-    id: generateId(),
-    title: "Esteira Prospecção",
-    url: "https://app.powerbi.com/view?r=eyJrIjoiMjgyN2IzYjktMTU2OS00NmNhLThlODAtMTIwZTAzODEyN2NjIiwidCI6IjBiNjIxMjhlLWQwNWMtNGFhZi1iZDJmLWY5YjEwNjMyNWZmMiJ9&pageName=cfe38bbcbf28bf228439", 
-    duration: 60
-  },
-  {
-    id: generateId(),
-    title: "Esteira Credito",
-    url: "https://app.powerbi.com/view?r=eyJrIjoiMjgyN2IzYjktMTU2OS00NmNhLThlODAtMTIwZTAzODEyN2NjIiwidCI6IjBiNjIxMjhlLWQwNWMtNGFhZi1iZDJmLWY5YjEwNjMyNWZmMiJ9&pageName=565c2da0f4ad6b64443b", 
-    duration: 60
-  },
-  {
-    id: generateId(),
-    title: "Esteira Formalização",
-    url: "https://app.powerbi.com/view?r=eyJrIjoiMjgyN2IzYjktMTU2OS00NmNhLThlODAtMTIwZTAzODEyN2NjIiwidCI6IjBiNjIxMjhlLWQwNWMtNGFhZi1iZDJmLWY5YjEwNjMyNWZmMiJ9&pageName=cab09347b25d5e6805af", 
-    duration: 60
-  },
+  }
 ];
 
 const DashboardContext = createContext<DashboardContextType | null>(null);
