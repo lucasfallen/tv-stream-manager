@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useDashboards } from '../contexts/DashboardContext';
 import DashboardEditor from '../components/DashboardEditor';
 import DashboardControls from '../components/DashboardControls';
-import socketService from '../services/SocketService';
 import '../styles/AdminPage.css';
 
 export default function AdminPage() {

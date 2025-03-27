@@ -1,7 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import { DashboardProvider } from './contexts/DashboardContext';
-import TvDisplayPage from './pages/TvDisplayPage';
-import AdminPage from './pages/AdminPage';
+import AppRoutes from './routes';
 import './App.css';
 
 /**
@@ -10,13 +9,9 @@ import './App.css';
 function App() {
   return (
     <DashboardProvider>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <div className="app-container">
-          <Routes>
-            <Route path="/" element={<TvDisplayPage />} />
-            <Route path="/admin" element={<AdminPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <AppRoutes />
         </div>
       </BrowserRouter>
     </DashboardProvider>

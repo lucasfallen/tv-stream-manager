@@ -141,7 +141,7 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
           setTvsList(prev => prev.filter(t => t.id !== tv.id));
           
           if (selectedTvId === tv.id) {
-            setSelectedTvId(prev => {
+            setSelectedTvId(() => {
               const remainingTvs = tvsList.filter(t => t.id !== tv.id);
               return remainingTvs.length > 0 ? remainingTvs[0].id : null;
             });
