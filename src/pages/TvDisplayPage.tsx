@@ -5,7 +5,7 @@ import { useDashboards } from '../contexts/DashboardContext';
 const TvDisplayPage = () => {
   const { 
     dashboards, 
-    currentIndex,
+    //currentIndex,
     socketConnected,
     connectSocket
   } = useDashboards();
