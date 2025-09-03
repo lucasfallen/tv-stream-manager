@@ -40,37 +40,43 @@ const initialDashboards: Dashboard[] = [
     id: generateId(),
     title: "Acompanhamento de Operações",
     url: "https://d2msppbxywc01b.cloudfront.net/", 
-    duration: 120
+    duration: 120,
+    contentType: 'dashboard'
   },
   {
     id: generateId(),
     title: "VOP",
     url: "https://app.powerbi.com/view?r=eyJrIjoiNTczYzA5YTQtZDRiZS00M2MxLWIyMjItNjMyNDA1YzFmMzMzIiwidCI6IjBiNjIxMjhlLWQwNWMtNGFhZi1iZDJmLWY5YjEwNjMyNWZmMiJ9&pageName=7bb75fff127c52e17b68", 
-    duration: 60
+    duration: 60,
+    contentType: 'dashboard'
   },
   {
     id: generateId(),
     title: "VOP 2",
     url: "https://app.powerbi.com/view?r=eyJrIjoiNTczYzA5YTQtZDRiZS00M2MxLWIyMjItNjMyNDA1YzFmMzMzIiwidCI6IjBiNjIxMjhlLWQwNWMtNGFhZi1iZDJmLWY5YjEwNjMyNWZmMiJ9&pageName=ReportSection55f7ad23034453b8a551", 
-    duration: 60
+    duration: 60,
+    contentType: 'dashboard'
   },
   {
     id: generateId(),
     title: "Esteira Prospecção",
     url: "https://app.powerbi.com/view?r=eyJrIjoiMjgyN2IzYjktMTU2OS00NmNhLThlODAtMTIwZTAzODEyN2NjIiwidCI6IjBiNjIxMjhlLWQwNWMtNGFhZi1iZDJmLWY5YjEwNjMyNWZmMiJ9&pageName=cfe38bbcbf28bf228439", 
-    duration: 60
+    duration: 60,
+    contentType: 'dashboard'
   },
   {
     id: generateId(),
     title: "Esteira Credito",
     url: "https://app.powerbi.com/view?r=eyJrIjoiMjgyN2IzYjktMTU2OS00NmNhLThlODAtMTIwZTAzODEyN2NjIiwidCI6IjBiNjIxMjhlLWQwNWMtNGFhZi1iZDJmLWY5YjEwNjMyNWZmMiJ9&pageName=565c2da0f4ad6b64443b", 
-    duration: 60
+    duration: 60,
+    contentType: 'dashboard'
   },
   {
     id: generateId(),
     title: "Esteira Formalização",
     url: "https://app.powerbi.com/view?r=eyJrIjoiMjgyN2IzYjktMTU2OS00NmNhLThlODAtMTIwZTAzODEyN2NjIiwidCI6IjBiNjIxMjhlLWQwNWMtNGFhZi1iZDJmLWY5YjEwNjMyNWZmMiJ9&pageName=cab09347b25d5e6805af", 
-    duration: 60
+    duration: 60,
+    contentType: 'dashboard'
   },
 ];
 
@@ -264,6 +270,13 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     const newDashboard = {
       ...dashboard,
       id: generateId(),
+      // Garantir que campos opcionais tenham valores padrão
+      contentType: dashboard.contentType || 'dashboard',
+      youtubeVideoId: dashboard.youtubeVideoId || '',
+      youtubeStartTime: dashboard.youtubeStartTime,
+      youtubeEndTime: dashboard.youtubeEndTime,
+      youtubeAutoplay: dashboard.youtubeAutoplay ?? true,
+      youtubeMute: dashboard.youtubeMute ?? true
     };
     setDashboards(prev => [...prev, newDashboard]);
   }, []);

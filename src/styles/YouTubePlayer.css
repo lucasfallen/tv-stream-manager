@@ -1,0 +1,318 @@
+/* ===== YOUTUBE PLAYER ===== */
+.youtube-player {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--neutral-900);
+  overflow: hidden;
+}
+
+/* ===== IFRAME ===== */
+.youtube-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: var(--neutral-900);
+}
+
+/* ===== ESTADOS DE CARREGAMENTO ===== */
+.youtube-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--neutral-900);
+  color: white;
+  z-index: 10;
+}
+
+.loading-spinner {
+  width: 60px;
+  height: 60px;
+  margin-bottom: var(--space-4);
+  animation: spin 1s linear infinite;
+}
+
+.loading-spinner svg {
+  width: 100%;
+  height: 100%;
+  stroke: var(--primary-400);
+  stroke-width: 2;
+  fill: none;
+}
+
+.loading-text {
+  font-size: var(--text-lg);
+  font-weight: var(--font-medium);
+  color: var(--neutral-300);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ===== ESTADOS DE ERRO ===== */
+.youtube-error,
+.youtube-player-error {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--neutral-900);
+  color: white;
+  z-index: 10;
+}
+
+.error-content {
+  text-align: center;
+  max-width: 400px;
+  padding: var(--space-6);
+}
+
+.error-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto var(--space-4);
+  color: var(--error-400);
+}
+
+.error-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke-width: 1.5;
+}
+
+.error-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-3);
+  color: var(--neutral-100);
+}
+
+.error-description {
+  font-size: var(--text-base);
+  color: var(--neutral-400);
+  margin-bottom: var(--space-4);
+  line-height: 1.6;
+}
+
+/* ===== OVERLAY DE INFORMAÇÕES ===== */
+.youtube-info-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.4) 50%,
+    transparent 100%
+  );
+  color: white;
+  z-index: 5;
+  padding: var(--space-4);
+  pointer-events: none;
+}
+
+.overlay-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  max-width: 100%;
+}
+
+.video-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: rgba(0, 0, 0, 0.7);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.title-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--primary-400);
+  stroke-width: 2;
+}
+
+.title-text {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: white;
+}
+
+/* ===== METADADOS DO YOUTUBE ===== */
+.youtube-meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: rgba(0, 0, 0, 0.7);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.meta-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--primary-400);
+  stroke-width: 2;
+  flex-shrink: 0;
+}
+
+.meta-label {
+  color: var(--neutral-300);
+  font-weight: var(--font-medium);
+  min-width: 60px;
+}
+
+.meta-value {
+  color: white;
+  font-weight: var(--font-semibold);
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 768px) {
+  .overlay-content {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .video-title {
+    align-self: flex-start;
+  }
+
+  .youtube-meta {
+    align-self: flex-end;
+  }
+
+  .error-content {
+    padding: var(--space-4);
+  }
+
+  .error-title {
+    font-size: var(--text-lg);
+  }
+
+  .loading-spinner {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .youtube-info-overlay {
+    padding: var(--space-3);
+  }
+
+  .video-title {
+    padding: var(--space-2);
+  }
+
+  .title-text {
+    font-size: var(--text-base);
+  }
+
+  .youtube-meta {
+    padding: var(--space-2);
+  }
+
+  .meta-item {
+    font-size: var(--text-xs);
+  }
+
+  .meta-label {
+    min-width: 50px;
+  }
+}
+
+/* ===== ANIMAÇÕES ===== */
+.youtube-player {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.youtube-loading,
+.youtube-error,
+.youtube-player-error {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== ESTADOS DE HOVER (para elementos interativos) ===== */
+.youtube-error .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ===== ESTADOS DE FOCUS ===== */
+.youtube-error .btn:focus {
+  outline: 2px solid var(--primary-400);
+  outline-offset: 2px;
+}
+
+/* ===== MODOS DE TELA CHEIA ===== */
+.youtube-player:fullscreen .youtube-info-overlay {
+  padding: var(--space-6);
+}
+
+.youtube-player:fullscreen .video-title {
+  padding: var(--space-3) var(--space-4);
+}
+
+.youtube-player:fullscreen .youtube-meta {
+  padding: var(--space-4);
+}
+
+/* ===== ESTADOS DE CARREGAMENTO LENTO ===== */
+.youtube-loading.loading-slow .loading-spinner {
+  animation-duration: 2s;
+}
+
+.youtube-loading.loading-slow .loading-text {
+  color: var(--warning-400);
+}
+
+/* ===== ESTADOS DE ERRO CRÍTICO ===== */
+.youtube-error.critical .error-icon {
+  color: var(--error-500);
+}
+
+.youtube-error.critical .error-title {
+  color: var(--error-100);
+}
+
+.youtube-error.critical .error-description {
+  color: var(--error-200);
+}
