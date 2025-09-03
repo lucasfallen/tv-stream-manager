@@ -32,191 +32,179 @@ export default function YouTubePlayer({ dashboard, onError }: YouTubePlayerProps
 
   // Função para ativar fullscreen do YouTube
   const activateYouTubeFullscreen = () => {
-    if (iframeRef.current) {
+    console.log('🎬 INICIANDO FULLSCREEN AUTOMÁTICO MULTI-ESTRATÉGIA');
+    
+    // ESTRATÉGIA 1: Simular tecla F na página principal
+    setTimeout(() => {
       try {
-        const iframe = iframeRef.current;
+        console.log('🎯 ESTRATÉGIA 1: Simulando tecla F na página principal...');
         
-        console.log('🎬 INICIANDO SEQUÊNCIA AUTOMÁTICA: CLIQUE NO CARD + FULLSCREEN');
-        console.log('📍 Iframe encontrado:', iframe);
-        console.log('📍 URL do iframe:', iframe.src);
+        // Simular o pressionamento da tecla F
+        const fKeyEvent = new KeyboardEvent('keydown', {
+          key: 'f',
+          code: 'KeyF',
+          keyCode: 70,
+          which: 70,
+          bubbles: true,
+          cancelable: true,
+          view: window
+        });
         
-        // ESTRATÉGIA 1: Clique direto no iframe (mais simples e eficaz)
-        setTimeout(() => {
-          console.log('🎯 ESTRATÉGIA 1: Clique direto no iframe...');
-          
-          try {
-            // Simular clique no centro do iframe
-            const rect = iframe.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            
-            console.log(`📍 Coordenadas do iframe: ${rect.left}, ${rect.top}, ${rect.width}x${rect.height}`);
-            console.log(`📍 Centro do iframe: ${centerX}, ${centerY}`);
-            
-            // Criar e disparar evento de clique
-            const clickEvent = new MouseEvent('click', {
-              view: window,
-              bubbles: true,
-              cancelable: true,
-              clientX: centerX,
-              clientY: centerY,
-              button: 0,
-              buttons: 1
-            });
-            
-            iframe.dispatchEvent(clickEvent);
-            console.log('✅ Clique no iframe executado com sucesso!');
-            
-          } catch (error) {
-            console.log('❌ Erro no clique direto:', error);
-          }
-        }, 1000); // 1 segundo
-        
-        // ESTRATÉGIA 2: Tentar acessar o conteúdo do iframe
-        setTimeout(() => {
-          console.log('🎯 ESTRATÉGIA 2: Tentando acessar conteúdo do iframe...');
-          
-          try {
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-            
-            if (iframeDoc) {
-              console.log('✅ Documento do iframe acessível!');
-              console.log('📍 Título do documento:', iframeDoc.title);
-              
-              // Procurar por elementos clicáveis
-              const clickableElements = iframeDoc.querySelectorAll('*');
-              console.log(`📍 Total de elementos no iframe: ${clickableElements.length}`);
-              
-              // Procurar por elementos específicos do YouTube
-              const youtubeElements = iframeDoc.querySelectorAll('.ytp-pause-overlay, .ytp-cued-thumbnail-overlay, .html5-video-container, video, .ytp-large-play-button');
-              console.log(`📍 Elementos do YouTube encontrados: ${youtubeElements.length}`);
-              
-              youtubeElements.forEach((element, index) => {
-                console.log(`📍 Elemento ${index}:`, element.tagName, element.className);
-                
-                try {
-                  // Tentar clicar no elemento
-                  (element as HTMLElement).click();
-                  console.log(`✅ Clique executado no elemento ${index}:`, element.tagName);
-                } catch (clickError) {
-                  console.log(`❌ Erro ao clicar no elemento ${index}:`, clickError);
-                }
-              });
-              
-            } else {
-              console.log('❌ Não foi possível acessar o documento do iframe');
-            }
-            
-          } catch (error) {
-            console.log('❌ Erro ao acessar conteúdo do iframe:', error);
-          }
-        }, 2000); // 2 segundos
-        
-        // ESTRATÉGIA 3: Tentar via postMessage
-        setTimeout(() => {
-          console.log('🎯 ESTRATÉGIA 3: Tentando via postMessage...');
-          
-          try {
-            // Comandos para o player do YouTube
-            const commands = [
-              { event: 'command', func: 'playVideo' },
-              { event: 'command', func: 'requestFullscreen' },
-              { event: 'command', func: 'setFullscreen', args: [true] }
-            ];
-            
-            commands.forEach((command, index) => {
-              setTimeout(() => {
-                try {
-                  iframe.contentWindow?.postMessage(JSON.stringify(command), '*');
-                  console.log(`✅ Comando ${index + 1} enviado:`, command);
-                } catch (error) {
-                  console.log(`❌ Erro no comando ${index + 1}:`, error);
-                }
-              }, index * 500);
-            });
-            
-          } catch (error) {
-            console.log('❌ Erro no postMessage:', error);
-          }
-        }, 3000); // 3 segundos
-        
-        // ESTRATÉGIA 4: Clique duplo no iframe
-        setTimeout(() => {
-          console.log('🎯 ESTRATÉGIA 4: Clique duplo no iframe...');
-          
-          try {
-            const rect = iframe.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            
-            // Clique duplo
-            const doubleClickEvent = new MouseEvent('dblclick', {
-              view: window,
-              bubbles: true,
-              cancelable: true,
-              clientX: centerX,
-              clientY: centerY,
-              button: 0,
-              buttons: 1
-            });
-            
-            iframe.dispatchEvent(doubleClickEvent);
-            console.log('✅ Clique duplo no iframe executado!');
-            
-          } catch (error) {
-            console.log('❌ Erro no clique duplo:', error);
-          }
-        }, 4000); // 4 segundos
-        
-        // ESTRATÉGIA 5: Múltiplos cliques em diferentes posições
-        setTimeout(() => {
-          console.log('🎯 ESTRATÉGIA 5: Múltiplos cliques em diferentes posições...');
-          
-          try {
-            const rect = iframe.getBoundingClientRect();
-            
-            // Posições para clicar
-            const positions = [
-              { x: rect.left + rect.width * 0.25, y: rect.top + rect.height * 0.25 }, // Top-left
-              { x: rect.left + rect.width * 0.75, y: rect.top + rect.height * 0.25 }, // Top-right
-              { x: rect.left + rect.width * 0.25, y: rect.top + rect.height * 0.75 }, // Bottom-left
-              { x: rect.left + rect.width * 0.75, y: rect.top + rect.height * 0.75 }, // Bottom-right
-              { x: rect.left + rect.width * 0.5, y: rect.top + rect.height * 0.5 }   // Center
-            ];
-            
-            positions.forEach((pos, index) => {
-              setTimeout(() => {
-                try {
-                  const clickEvent = new MouseEvent('click', {
-                    view: window,
-                    bubbles: true,
-                    cancelable: true,
-                    clientX: pos.x,
-                    clientY: pos.y,
-                    button: 0,
-                    buttons: 1
-                  });
-                  
-                  iframe.dispatchEvent(clickEvent);
-                  console.log(`✅ Clique ${index + 1} em posição ${pos.x}, ${pos.y}`);
-                  
-                } catch (error) {
-                  console.log(`❌ Erro no clique ${index + 1}:`, error);
-                }
-              }, index * 200);
-            });
-            
-          } catch (error) {
-            console.log('❌ Erro nos múltiplos cliques:', error);
-          }
-        }, 5000); // 5 segundos
+        // Disparar o evento de tecla
+        document.dispatchEvent(fKeyEvent);
+        console.log('✅ Tecla F simulada na página principal!');
         
       } catch (error) {
-        console.log('❌ Erro geral na função:', error);
+        console.log('❌ Erro ao simular tecla F na página:', error);
       }
-    } else {
-      console.log('❌ Iframe não encontrado!');
-    }
+    }, 2000); // 2 segundos
+    
+    // ESTRATÉGIA 2: Simular tecla F no iframe
+    setTimeout(() => {
+      try {
+        console.log('🎯 ESTRATÉGIA 2: Simulando tecla F no iframe...');
+        
+        if (iframeRef.current) {
+          const iframe = iframeRef.current;
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+          
+          if (iframeDoc) {
+            const fKeyEvent = new KeyboardEvent('keydown', {
+              key: 'f',
+              code: 'KeyF',
+              keyCode: 70,
+              which: 70,
+              bubbles: true,
+              cancelable: true,
+              view: iframe.contentWindow || window
+            });
+            
+            iframeDoc.dispatchEvent(fKeyEvent);
+            console.log('✅ Tecla F simulada no iframe!');
+          }
+        }
+        
+      } catch (error) {
+        console.log('❌ Erro ao simular tecla F no iframe:', error);
+      }
+    }, 3000); // 3 segundos
+    
+    // ESTRATÉGIA 3: Fullscreen da página via API
+    setTimeout(() => {
+      try {
+        console.log('🎯 ESTRATÉGIA 3: Ativando fullscreen da página via API...');
+        
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+          console.log('✅ Fullscreen da página ativado via API!');
+        } else if ((document.documentElement as any).webkitRequestFullscreen) {
+          (document.documentElement as any).webkitRequestFullscreen();
+          console.log('✅ Fullscreen da página ativado via webkit!');
+        } else if ((document.documentElement as any).msRequestFullscreen) {
+          (document.documentElement as any).msRequestFullscreen();
+          console.log('✅ Fullscreen da página ativado via ms!');
+        }
+        
+      } catch (error) {
+        console.log('❌ Erro ao ativar fullscreen da página:', error);
+      }
+    }, 4000); // 4 segundos
+    
+    // ESTRATÉGIA 4: Fullscreen do iframe via API
+    setTimeout(() => {
+      try {
+        console.log('🎯 ESTRATÉGIA 4: Ativando fullscreen do iframe via API...');
+        
+        if (iframeRef.current) {
+          const iframe = iframeRef.current;
+          
+          if (iframe.requestFullscreen) {
+            iframe.requestFullscreen();
+            console.log('✅ Fullscreen do iframe ativado via API!');
+          } else if ((iframe as any).webkitRequestFullscreen) {
+            (iframe as any).webkitRequestFullscreen();
+            console.log('✅ Fullscreen do iframe ativado via webkit!');
+          } else if ((iframe as any).msRequestFullscreen) {
+            (iframe as any).msRequestFullscreen();
+            console.log('✅ Fullscreen do iframe ativado via ms!');
+          }
+        }
+        
+      } catch (error) {
+        console.log('❌ Erro ao ativar fullscreen do iframe:', error);
+      }
+    }, 5000); // 5 segundos
+    
+    // ESTRATÉGIA 5: Tentar via postMessage para o YouTube
+    setTimeout(() => {
+      try {
+        console.log('🎯 ESTRATÉGIA 5: Tentando fullscreen via postMessage...');
+        
+        if (iframeRef.current) {
+          const iframe = iframeRef.current;
+          
+          // Comandos para o player do YouTube
+          const commands = [
+            { event: 'command', func: 'requestFullscreen' },
+            { event: 'command', func: 'setFullscreen', args: [true] },
+            { event: 'command', func: 'toggleFullscreen' }
+          ];
+          
+          commands.forEach((command, index) => {
+            setTimeout(() => {
+              try {
+                iframe.contentWindow?.postMessage(JSON.stringify(command), '*');
+                console.log(`✅ Comando ${index + 1} enviado:`, command);
+              } catch (error) {
+                console.log(`❌ Erro no comando ${index + 1}:`, error);
+              }
+            }, index * 300);
+          });
+        }
+        
+      } catch (error) {
+        console.log('❌ Erro no postMessage:', error);
+      }
+    }, 6000); // 6 segundos
+    
+    // ESTRATÉGIA 6: Simular clique no botão de fullscreen do YouTube
+    setTimeout(() => {
+      try {
+        console.log('🎯 ESTRATÉGIA 6: Procurando botão de fullscreen no YouTube...');
+        
+        if (iframeRef.current) {
+          const iframe = iframeRef.current;
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+          
+          if (iframeDoc) {
+            // Procurar pelo botão de fullscreen
+            const fullscreenSelectors = [
+              '.ytp-fullscreen-button',
+              'button[aria-label*="fullscreen"]',
+              'button[aria-label*="tela cheia"]',
+              '[data-tooltip*="fullscreen"]'
+            ];
+            
+            fullscreenSelectors.forEach((selector) => {
+              const elements = iframeDoc.querySelectorAll(selector);
+              if (elements.length > 0) {
+                console.log(`🎯 Botão de fullscreen encontrado: ${selector}`);
+                
+                try {
+                  (elements[0] as HTMLElement).click();
+                  console.log(`✅ Clique no botão de fullscreen executado: ${selector}`);
+                } catch (clickError) {
+                  console.log(`❌ Erro ao clicar no botão: ${selector}`, clickError);
+                }
+              }
+            });
+          }
+        }
+        
+      } catch (error) {
+        console.log('❌ Erro ao procurar botão de fullscreen:', error);
+      }
+    }, 7000); // 7 segundos
   };
 
   const handleLoad = () => {
@@ -325,7 +313,7 @@ export default function YouTubePlayer({ dashboard, onError }: YouTubePlayerProps
             fontSize: '12px'
           }}
         >
-          🎯 TESTE: Clique Automático
+          🎯 TESTE: Fullscreen Multi-Estratégia
         </button>
         
         <div className="test-info" style={{
@@ -338,12 +326,14 @@ export default function YouTubePlayer({ dashboard, onError }: YouTubePlayerProps
           padding: '10px',
           borderRadius: '5px',
           fontSize: '11px',
-          maxWidth: '200px'
+          maxWidth: '250px'
         }}>
           <div>🎬 Vídeo: {dashboard.title}</div>
           <div>🆔 ID: {dashboard.youtubeVideoId}</div>
           <div>📱 Status: {isLoaded ? 'Carregado' : 'Carregando'}</div>
           <div>🎯 Clique no botão vermelho para testar</div>
+          <div>⌨️ 6 estratégias diferentes de fullscreen</div>
+          <div>⏱️ Executa automaticamente em sequência</div>
         </div>
       </div>
     </div>

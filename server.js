@@ -113,14 +113,23 @@ const app = express();
 const server = http.createServer(app);
 
 // Habilitar CORS para todas as origens
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 
 // Configurar o Socket.IO com permissão de CORS
 const io = new Server(server, {
   cors: {
     origin: '*', // Em produção, especifique a origem correta
-    methods: ['GET', 'POST']
-  }
+    methods: ['GET', 'POST'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization']
+  },
+  allowEIO3: true,
+  transports: ['websocket', 'polling']
 });
 
 // Servir arquivos estáticos após a build
@@ -154,11 +163,15 @@ function executeSqlite(statement, params = [], errorMessage = 'Erro na operaçã
 
 // Configuração do Socket.IO
 io.on('connection', (socket) => {
-  console.log('Cliente conectado:', socket.id);
+  console.log('🎉 Cliente conectado:', socket.id);
+  console.log('📍 IP do cliente:', socket.handshake.address);
+  console.log('📍 Headers:', socket.handshake.headers);
+  console.log('📍 Query:', socket.handshake.query);
   
   // Cliente se registra (TV ou Admin)
   socket.on('register-client', ({ clientType, name }) => {
-    console.log(`Cliente ${socket.id} registrado como ${clientType}: ${name}`);
+    console.log(`🎯 Cliente ${socket.id} registrado como ${clientType}: ${name}`);
+    console.log(`📍 Dados recebidos:`, { clientType, name });
     
     // Persistir no SQLite
     try {
@@ -179,6 +192,8 @@ io.on('connection', (socket) => {
         executeSqlite(updateDeviceStatus, [socket.id, 0, 1], 'Erro ao atualizar status inicial');
         
         // Notificar todos os admins sobre a nova TV
+        console.log(`🎯 TV ${name} (${socket.id}) conectada, notificando admins...`);
+        
         emitToAllAdmins('tv-connected', {
           id: socket.id,
           name,
@@ -191,6 +206,8 @@ io.on('connection', (socket) => {
       } 
       else if (clientType === 'admin') {
         // Registrar cliente como Admin
+        console.log(`🎯 Admin ${name} (${socket.id}) conectado, enviando lista de TVs...`);
+        
         adminClients.set(socket.id, {
           id: socket.id,
           name,
@@ -209,14 +226,23 @@ io.on('connection', (socket) => {
   
   // Atualização de dashboards para TV específica
   socket.on('dashboard-update-to', ({ targetTvId, dashboards }) => {
+    console.log(`📡 Atualizando dashboards para TV ${targetTvId}:`, dashboards);
+    
     const tvClient = tvClients.get(targetTvId);
     if (tvClient && adminClients.has(socket.id)) {
-      tvClient.socket.emit('dashboard-update', dashboards);
+      try {
+        tvClient.socket.emit('dashboard-update', dashboards);
+        console.log(`✅ Dashboards enviados para TV ${tvClient.name}`);
+      } catch (error) {
+        console.log(`❌ Erro ao enviar dashboards para TV ${tvClient.name}:`, error);
+      }
     }
   });
   
   // Atualização de dashboards para todas as TVs
   socket.on('dashboard-update-all', (dashboards) => {
+    console.log(`📡 Atualizando dashboards para todas as TVs:`, dashboards);
+    
     if (adminClients.has(socket.id)) {
       emitToAllTvs('dashboard-update', dashboards);
     }
@@ -224,6 +250,8 @@ io.on('connection', (socket) => {
   
   // Mudança do dashboard atual para TV específica
   socket.on('current-dashboard-change-to', ({ targetTvId, index }) => {
+    console.log(`📡 Mudando dashboard da TV ${targetTvId} para índice ${index}`);
+    
     const tvClient = tvClients.get(targetTvId);
     if (tvClient && adminClients.has(socket.id)) {
       try {
@@ -238,6 +266,8 @@ io.on('connection', (socket) => {
         );
         
         // Atualizar status da TV nos admins
+        console.log(`📡 Status da TV ${tvClient.name} atualizado: dashboard ${index}, playing: ${tvClient.isPlaying}`);
+        
         emitToAllAdmins('tv-status-updated', {
           id: targetTvId,
           currentDashboardIndex: index,
@@ -268,6 +298,8 @@ io.on('connection', (socket) => {
           );
           
           // Notificar admins sobre a atualização
+          console.log(`📡 Status da TV ${client.name} atualizado: dashboard ${index}, playing: ${client.isPlaying}`);
+          
           emitToAllAdmins('tv-status-updated', {
             id,
             currentDashboardIndex: index,
@@ -297,6 +329,8 @@ io.on('connection', (socket) => {
         );
         
         // Atualizar status da TV nos admins
+        console.log(`📡 Status de reprodução da TV ${tvClient.name} atualizado: playing: ${isPlaying}`);
+        
         emitToAllAdmins('tv-status-updated', {
           id: targetTvId,
           currentDashboardIndex: tvClient.currentDashboardIndex,
@@ -327,6 +361,8 @@ io.on('connection', (socket) => {
           );
           
           // Notificar admins sobre a atualização
+          console.log(`📡 Status de reprodução da TV ${client.name} atualizado: playing: ${isPlaying}`);
+          
           emitToAllAdmins('tv-status-updated', {
             id,
             currentDashboardIndex: client.currentDashboardIndex,
@@ -408,7 +444,8 @@ io.on('connection', (socket) => {
   
   // Desconexão do cliente
   socket.on('disconnect', () => {
-    console.log('Cliente desconectado:', socket.id);
+    console.log('❌ Cliente desconectado:', socket.id);
+    console.log('📍 Motivo:', socket.disconnectReason);
     
     try {
       // Marcar dispositivo como offline no SQLite
@@ -417,6 +454,8 @@ io.on('connection', (socket) => {
       if (tvClients.has(socket.id)) {
         // Cliente era uma TV
         const tvClient = tvClients.get(socket.id);
+        console.log(`❌ TV ${tvClient.name} (${socket.id}) desconectada, notificando admins...`);
+        
         tvClients.delete(socket.id);
         
         // Notificar admins sobre a desconexão
@@ -430,6 +469,8 @@ io.on('connection', (socket) => {
       } 
       else if (adminClients.has(socket.id)) {
         // Cliente era um admin
+        const adminClient = adminClients.get(socket.id);
+        console.log(`❌ Admin ${adminClient.name} (${socket.id}) desconectado`);
         adminClients.delete(socket.id);
       }
     } catch (error) {
@@ -449,7 +490,14 @@ function emitTvsList(adminSocket) {
     isPlaying: tv.isPlaying
   }));
   
-  adminSocket.emit('tvs-list', tvsList);
+  console.log(`📡 Enviando lista de TVs para admin ${adminSocket.id}:`, tvsList);
+  
+  try {
+    adminSocket.emit('tvs-list', tvsList);
+    console.log(`✅ Lista de TVs enviada para admin ${adminSocket.id}`);
+  } catch (error) {
+    console.log(`❌ Erro ao enviar lista de TVs para admin ${adminSocket.id}:`, error);
+  }
 }
 
 // Enviar lista de TVs para todos os admins
@@ -461,25 +509,45 @@ function emitTvsListToAllAdmins() {
     isPlaying: tv.isPlaying
   }));
   
+  console.log('📡 Enviando lista de TVs para admins:', tvsList);
+  console.log('📍 Total de TVs:', tvClients.size);
+  console.log('📍 Total de admins:', adminClients.size);
+  
   emitToAllAdmins('tvs-list', tvsList);
 }
 
 // Emitir evento para todas as TVs
 function emitToAllTvs(event, data) {
+  console.log(`📡 Emitindo evento '${event}' para ${tvClients.size} TVs:`, data);
+  
   for (const client of tvClients.values()) {
-    client.socket.emit(event, data);
+    try {
+      client.socket.emit(event, data);
+      console.log(`✅ Evento '${event}' enviado para TV ${client.id}`);
+    } catch (error) {
+      console.log(`❌ Erro ao enviar evento '${event}' para TV ${client.id}:`, error);
+    }
   }
 }
 
 // Emitir evento para todos os admins
 function emitToAllAdmins(event, data) {
+  console.log(`📡 Emitindo evento '${event}' para ${adminClients.size} admins:`, data);
+  
   for (const client of adminClients.values()) {
-    client.socket.emit(event, data);
+    try {
+      client.socket.emit(event, data);
+      console.log(`✅ Evento '${event}' enviado para admin ${client.id}`);
+    } catch (error) {
+      console.log(`❌ Erro ao enviar evento '${event}' para admin ${client.id}:`, error);
+    }
   }
 }
 
 // Iniciar o servidor
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
+  console.log(`Servidor rodando em http://0.0.0.0:${PORT}`);
+  console.log(`Servidor aceitando conexões de qualquer IP`);
 }); 
