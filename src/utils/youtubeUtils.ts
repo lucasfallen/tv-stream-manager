@@ -136,6 +136,11 @@ export function generateYouTubeEmbedUrl(videoId: string, options: Partial<YouTub
   // Sempre incluir showinfo=0 para remover informações do vídeo
   params.set('showinfo', '0');
   
+  // Parâmetros para melhorar a experiência de fullscreen
+  params.set('fs', '1'); // Habilitar botão de fullscreen
+  params.set('playsinline', '0'); // Permitir reprodução em tela cheia
+  params.set('enablejsapi', '1'); // Habilitar API JavaScript
+  
   const queryString = params.toString();
   return `https://www.youtube.com/embed/${videoId}${queryString ? `?${queryString}` : ''}`;
 }

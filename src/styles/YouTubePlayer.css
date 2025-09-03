@@ -1,21 +1,17 @@
-/* ===== YOUTUBE PLAYER ===== */
+/* ===== YOUTUBE PLAYER MINIMALISTA ===== */
+
+/* ===== CONTAINER PRINCIPAL ===== */
 .youtube-player {
+  width: 100%;
+  height: 100%;
   position: relative;
-  width: 100%;
-  height: 100%;
-  background: var(--neutral-900);
-  overflow: hidden;
+  background: var(--bg-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* ===== IFRAME ===== */
-.youtube-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  background: var(--neutral-900);
-}
-
-/* ===== ESTADOS DE CARREGAMENTO ===== */
+/* ===== ESTADO DE CARREGAMENTO ===== */
 .youtube-loading {
   position: absolute;
   top: 0;
@@ -26,14 +22,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--neutral-900);
-  color: white;
-  z-index: 10;
+  background: var(--bg-dark);
+  color: var(--text-inverse);
+  z-index: 1;
 }
 
 .loading-spinner {
-  width: 60px;
-  height: 60px;
+  width: 64px;
+  height: 64px;
   margin-bottom: var(--space-4);
   animation: spin 1s linear infinite;
 }
@@ -41,25 +37,17 @@
 .loading-spinner svg {
   width: 100%;
   height: 100%;
-  stroke: var(--primary-400);
-  stroke-width: 2;
-  fill: none;
+  color: var(--primary-400);
 }
 
 .loading-text {
   font-size: var(--text-lg);
+  color: var(--text-muted);
   font-weight: var(--font-medium);
-  color: var(--neutral-300);
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* ===== ESTADOS DE ERRO ===== */
-.youtube-error,
-.youtube-player-error {
+/* ===== ESTADO DE ERRO ===== */
+.youtube-error {
   position: absolute;
   top: 0;
   left: 0;
@@ -68,251 +56,108 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--neutral-900);
-  color: white;
-  z-index: 10;
+  background: var(--bg-dark);
+  color: var(--text-inverse);
+  z-index: 1;
 }
 
 .error-content {
   text-align: center;
-  max-width: 400px;
-  padding: var(--space-6);
+  max-width: 500px;
+  padding: var(--space-8);
+  background: var(--bg-dark-secondary);
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--bg-dark-tertiary);
+  box-shadow: var(--shadow-xl);
 }
 
 .error-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 80px;
   height: 80px;
+  background: var(--error-600);
+  border-radius: 50%;
   margin: 0 auto var(--space-4);
-  color: var(--error-400);
+  color: white;
 }
 
 .error-icon svg {
-  width: 100%;
-  height: 100%;
-  stroke-width: 1.5;
+  width: 40px;
+  height: 40px;
+  stroke: currentColor;
+  stroke-width: 2;
 }
 
 .error-title {
-  font-size: var(--text-xl);
+  font-size: var(--text-2xl);
   font-weight: var(--font-semibold);
-  margin-bottom: var(--space-3);
-  color: var(--neutral-100);
+  color: var(--text-inverse);
+  margin: 0 0 var(--space-2) 0;
+  line-height: 1.3;
 }
 
 .error-description {
   font-size: var(--text-base);
-  color: var(--neutral-400);
-  margin-bottom: var(--space-4);
-  line-height: 1.6;
+  color: var(--text-muted);
+  margin: 0 0 var(--space-6) 0;
+  line-height: 1.5;
 }
 
-/* ===== OVERLAY DE INFORMAÇÕES ===== */
-.youtube-info-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0.8) 0%,
-    rgba(0, 0, 0, 0.4) 50%,
-    transparent 100%
-  );
-  color: white;
-  z-index: 5;
-  padding: var(--space-4);
-  pointer-events: none;
+/* ===== IFRAME DO YOUTUBE ===== */
+.youtube-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: var(--bg-dark);
+  display: block;
 }
 
-.overlay-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  max-width: 100%;
-}
-
-.video-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  background: rgba(0, 0, 0, 0.7);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-lg);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.title-icon {
-  width: 20px;
-  height: 20px;
-  color: var(--primary-400);
-  stroke-width: 2;
-}
-
-.title-text {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  color: white;
-}
-
-/* ===== METADADOS DO YOUTUBE ===== */
-.youtube-meta {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  background: rgba(0, 0, 0, 0.7);
-  padding: var(--space-3);
-  border-radius: var(--radius-lg);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.meta-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-}
-
-.meta-icon {
-  width: 16px;
-  height: 16px;
-  color: var(--primary-400);
-  stroke-width: 2;
-  flex-shrink: 0;
-}
-
-.meta-label {
-  color: var(--neutral-300);
-  font-weight: var(--font-medium);
-  min-width: 60px;
-}
-
-.meta-value {
-  color: white;
-  font-weight: var(--font-semibold);
+/* ===== ANIMAÇÃO DE SPIN ===== */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ===== RESPONSIVIDADE ===== */
 @media (max-width: 768px) {
-  .overlay-content {
-    flex-direction: column;
-    gap: var(--space-3);
-  }
-
-  .video-title {
-    align-self: flex-start;
-  }
-
-  .youtube-meta {
-    align-self: flex-end;
-  }
-
   .error-content {
-    padding: var(--space-4);
+    padding: var(--space-6);
+    margin: var(--space-4);
   }
-
+  
   .error-title {
-    font-size: var(--text-lg);
+    font-size: var(--text-xl);
   }
-
-  .loading-spinner {
-    width: 50px;
-    height: 50px;
+  
+  .loading-text {
+    font-size: var(--text-base);
   }
 }
 
 @media (max-width: 480px) {
-  .youtube-info-overlay {
-    padding: var(--space-3);
+  .error-content {
+    padding: var(--space-4);
+    margin: var(--space-2);
   }
-
-  .video-title {
-    padding: var(--space-2);
+  
+  .error-icon {
+    width: 64px;
+    height: 64px;
   }
-
-  .title-text {
-    font-size: var(--text-base);
+  
+  .error-icon svg {
+    width: 32px;
+    height: 32px;
   }
-
-  .youtube-meta {
-    padding: var(--space-2);
+  
+  .loading-spinner {
+    width: 48px;
+    height: 48px;
   }
-
-  .meta-item {
-    font-size: var(--text-xs);
-  }
-
-  .meta-label {
-    min-width: 50px;
-  }
-}
-
-/* ===== ANIMAÇÕES ===== */
-.youtube-player {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.youtube-loading,
-.youtube-error,
-.youtube-player-error {
-  animation: fadeIn 0.2s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ===== ESTADOS DE HOVER (para elementos interativos) ===== */
-.youtube-error .btn:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-/* ===== ESTADOS DE FOCUS ===== */
-.youtube-error .btn:focus {
-  outline: 2px solid var(--primary-400);
-  outline-offset: 2px;
-}
-
-/* ===== MODOS DE TELA CHEIA ===== */
-.youtube-player:fullscreen .youtube-info-overlay {
-  padding: var(--space-6);
-}
-
-.youtube-player:fullscreen .video-title {
-  padding: var(--space-3) var(--space-4);
-}
-
-.youtube-player:fullscreen .youtube-meta {
-  padding: var(--space-4);
-}
-
-/* ===== ESTADOS DE CARREGAMENTO LENTO ===== */
-.youtube-loading.loading-slow .loading-spinner {
-  animation-duration: 2s;
-}
-
-.youtube-loading.loading-slow .loading-text {
-  color: var(--warning-400);
-}
-
-/* ===== ESTADOS DE ERRO CRÍTICO ===== */
-.youtube-error.critical .error-icon {
-  color: var(--error-500);
-}
-
-.youtube-error.critical .error-title {
-  color: var(--error-100);
-}
-
-.youtube-error.critical .error-description {
-  color: var(--error-200);
 }

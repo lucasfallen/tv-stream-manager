@@ -16,6 +16,7 @@ interface DashboardContextType {
   tvsList: TvClient[];
   selectedTvId: string | null;
   socketConnected: boolean;
+  adminName: string;
   setIsPlaying: (playing: boolean) => void;
   setIsEditMode: (editing: boolean) => void;
   setSelectedTvId: (tvId: string | null) => void;
@@ -96,7 +97,16 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
   const [tvsList, setTvsList] = useState<TvClient[]>([]);
   const [selectedTvId, setSelectedTvId] = useState<string | null>(null);
   const [socketConnected, setSocketConnected] = useState(false);
+  const [adminName, setAdminName] = useState('Admin');
   
+  // Efeito para carregar o nome do admin do localStorage
+  useEffect(() => {
+    const savedAdminName = localStorage.getItem('adminName');
+    if (savedAdminName) {
+      setAdminName(savedAdminName);
+    }
+  }, []);
+
   // Função para verificar a conexão do socket
   useEffect(() => {
     const checkConnection = () => {
@@ -125,7 +135,7 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     }
   }, [currentIndex, isPlaying, isAdmin]);
   
-  // Conectar ao serviço de WebSocket quando o componente montar
+  // Efeito para configurar o socket e listeners
   useEffect(() => {
     // Verificar se estamos na rota de admin
     const isAdminRoute = window.location.pathname.includes('/admin');
@@ -366,6 +376,7 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
   const renameClient = useCallback((name: string) => {
     if (isAdmin) {
       localStorage.setItem('adminName', name);
+      setAdminName(name);
     } else {
       localStorage.setItem('tvName', name);
     }
@@ -383,6 +394,7 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     tvsList,
     selectedTvId,
     socketConnected,
+    adminName,
     setIsPlaying,
     setIsEditMode,
     setSelectedTvId,

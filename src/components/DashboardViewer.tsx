@@ -32,21 +32,33 @@ export default function DashboardViewer() {
       }
     };
     
-    // Tentar ativar tela cheia após interação do usuário
-    const handleFirstInteraction = () => {
-      requestFullScreen();
-      document.removeEventListener('click', handleFirstInteraction);
-      document.removeEventListener('keydown', handleFirstInteraction);
-    };
+    // Verificar se é um vídeo do YouTube
+    const isYouTubeVideo = currentDashboard?.contentType === 'youtube' && currentDashboard?.youtubeVideoId;
     
-    document.addEventListener('click', handleFirstInteraction);
-    document.addEventListener('keydown', handleFirstInteraction);
-    
-    return () => {
-      document.removeEventListener('click', handleFirstInteraction);
-      document.removeEventListener('keydown', handleFirstInteraction);
-    };
-  }, []);
+    if (isYouTubeVideo) {
+      // Para vídeos do YouTube, ativar fullscreen automaticamente após um pequeno delay
+      const autoFullscreenTimer = setTimeout(() => {
+        requestFullScreen();
+      }, 1000); // Delay de 1 segundo para garantir que o vídeo carregou
+      
+      return () => clearTimeout(autoFullscreenTimer);
+    } else {
+      // Para dashboards normais, ativar fullscreen apenas após interação do usuário
+      const handleFirstInteraction = () => {
+        requestFullScreen();
+        document.removeEventListener('click', handleFirstInteraction);
+        document.removeEventListener('keydown', handleFirstInteraction);
+      };
+      
+      document.addEventListener('click', handleFirstInteraction);
+      document.addEventListener('keydown', handleFirstInteraction);
+      
+      return () => {
+        document.removeEventListener('click', handleFirstInteraction);
+        document.removeEventListener('keydown', handleFirstInteraction);
+      };
+    }
+  }, [currentDashboard]);
   
   useEffect(() => {
     // Resetar o estado de erro quando mudar de dashboard

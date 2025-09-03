@@ -30,9 +30,201 @@ export default function YouTubePlayer({ dashboard, onError }: YouTubePlayerProps
     setLoadError(false);
   }, [dashboard.id]);
 
+  // Função para ativar fullscreen do YouTube
+  const activateYouTubeFullscreen = () => {
+    if (iframeRef.current) {
+      try {
+        const iframe = iframeRef.current;
+        
+        console.log('🎬 INICIANDO SEQUÊNCIA AUTOMÁTICA: CLIQUE NO CARD + FULLSCREEN');
+        console.log('📍 Iframe encontrado:', iframe);
+        console.log('📍 URL do iframe:', iframe.src);
+        
+        // ESTRATÉGIA 1: Clique direto no iframe (mais simples e eficaz)
+        setTimeout(() => {
+          console.log('🎯 ESTRATÉGIA 1: Clique direto no iframe...');
+          
+          try {
+            // Simular clique no centro do iframe
+            const rect = iframe.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            console.log(`📍 Coordenadas do iframe: ${rect.left}, ${rect.top}, ${rect.width}x${rect.height}`);
+            console.log(`📍 Centro do iframe: ${centerX}, ${centerY}`);
+            
+            // Criar e disparar evento de clique
+            const clickEvent = new MouseEvent('click', {
+              view: window,
+              bubbles: true,
+              cancelable: true,
+              clientX: centerX,
+              clientY: centerY,
+              button: 0,
+              buttons: 1
+            });
+            
+            iframe.dispatchEvent(clickEvent);
+            console.log('✅ Clique no iframe executado com sucesso!');
+            
+          } catch (error) {
+            console.log('❌ Erro no clique direto:', error);
+          }
+        }, 1000); // 1 segundo
+        
+        // ESTRATÉGIA 2: Tentar acessar o conteúdo do iframe
+        setTimeout(() => {
+          console.log('🎯 ESTRATÉGIA 2: Tentando acessar conteúdo do iframe...');
+          
+          try {
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+            
+            if (iframeDoc) {
+              console.log('✅ Documento do iframe acessível!');
+              console.log('📍 Título do documento:', iframeDoc.title);
+              
+              // Procurar por elementos clicáveis
+              const clickableElements = iframeDoc.querySelectorAll('*');
+              console.log(`📍 Total de elementos no iframe: ${clickableElements.length}`);
+              
+              // Procurar por elementos específicos do YouTube
+              const youtubeElements = iframeDoc.querySelectorAll('.ytp-pause-overlay, .ytp-cued-thumbnail-overlay, .html5-video-container, video, .ytp-large-play-button');
+              console.log(`📍 Elementos do YouTube encontrados: ${youtubeElements.length}`);
+              
+              youtubeElements.forEach((element, index) => {
+                console.log(`📍 Elemento ${index}:`, element.tagName, element.className);
+                
+                try {
+                  // Tentar clicar no elemento
+                  (element as HTMLElement).click();
+                  console.log(`✅ Clique executado no elemento ${index}:`, element.tagName);
+                } catch (clickError) {
+                  console.log(`❌ Erro ao clicar no elemento ${index}:`, clickError);
+                }
+              });
+              
+            } else {
+              console.log('❌ Não foi possível acessar o documento do iframe');
+            }
+            
+          } catch (error) {
+            console.log('❌ Erro ao acessar conteúdo do iframe:', error);
+          }
+        }, 2000); // 2 segundos
+        
+        // ESTRATÉGIA 3: Tentar via postMessage
+        setTimeout(() => {
+          console.log('🎯 ESTRATÉGIA 3: Tentando via postMessage...');
+          
+          try {
+            // Comandos para o player do YouTube
+            const commands = [
+              { event: 'command', func: 'playVideo' },
+              { event: 'command', func: 'requestFullscreen' },
+              { event: 'command', func: 'setFullscreen', args: [true] }
+            ];
+            
+            commands.forEach((command, index) => {
+              setTimeout(() => {
+                try {
+                  iframe.contentWindow?.postMessage(JSON.stringify(command), '*');
+                  console.log(`✅ Comando ${index + 1} enviado:`, command);
+                } catch (error) {
+                  console.log(`❌ Erro no comando ${index + 1}:`, error);
+                }
+              }, index * 500);
+            });
+            
+          } catch (error) {
+            console.log('❌ Erro no postMessage:', error);
+          }
+        }, 3000); // 3 segundos
+        
+        // ESTRATÉGIA 4: Clique duplo no iframe
+        setTimeout(() => {
+          console.log('🎯 ESTRATÉGIA 4: Clique duplo no iframe...');
+          
+          try {
+            const rect = iframe.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            // Clique duplo
+            const doubleClickEvent = new MouseEvent('dblclick', {
+              view: window,
+              bubbles: true,
+              cancelable: true,
+              clientX: centerX,
+              clientY: centerY,
+              button: 0,
+              buttons: 1
+            });
+            
+            iframe.dispatchEvent(doubleClickEvent);
+            console.log('✅ Clique duplo no iframe executado!');
+            
+          } catch (error) {
+            console.log('❌ Erro no clique duplo:', error);
+          }
+        }, 4000); // 4 segundos
+        
+        // ESTRATÉGIA 5: Múltiplos cliques em diferentes posições
+        setTimeout(() => {
+          console.log('🎯 ESTRATÉGIA 5: Múltiplos cliques em diferentes posições...');
+          
+          try {
+            const rect = iframe.getBoundingClientRect();
+            
+            // Posições para clicar
+            const positions = [
+              { x: rect.left + rect.width * 0.25, y: rect.top + rect.height * 0.25 }, // Top-left
+              { x: rect.left + rect.width * 0.75, y: rect.top + rect.height * 0.25 }, // Top-right
+              { x: rect.left + rect.width * 0.25, y: rect.top + rect.height * 0.75 }, // Bottom-left
+              { x: rect.left + rect.width * 0.75, y: rect.top + rect.height * 0.75 }, // Bottom-right
+              { x: rect.left + rect.width * 0.5, y: rect.top + rect.height * 0.5 }   // Center
+            ];
+            
+            positions.forEach((pos, index) => {
+              setTimeout(() => {
+                try {
+                  const clickEvent = new MouseEvent('click', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true,
+                    clientX: pos.x,
+                    clientY: pos.y,
+                    button: 0,
+                    buttons: 1
+                  });
+                  
+                  iframe.dispatchEvent(clickEvent);
+                  console.log(`✅ Clique ${index + 1} em posição ${pos.x}, ${pos.y}`);
+                  
+                } catch (error) {
+                  console.log(`❌ Erro no clique ${index + 1}:`, error);
+                }
+              }, index * 200);
+            });
+            
+          } catch (error) {
+            console.log('❌ Erro nos múltiplos cliques:', error);
+          }
+        }, 5000); // 5 segundos
+        
+      } catch (error) {
+        console.log('❌ Erro geral na função:', error);
+      }
+    } else {
+      console.log('❌ Iframe não encontrado!');
+    }
+  };
+
   const handleLoad = () => {
     setIsLoaded(true);
     setLoadError(false);
+    
+    // Tentar ativar fullscreen do YouTube após carregar
+    activateYouTubeFullscreen();
   };
 
   const handleError = () => {
@@ -114,65 +306,46 @@ export default function YouTubePlayer({ dashboard, onError }: YouTubePlayerProps
         style={{ display: isLoaded && !loadError ? 'block' : 'none' }}
       />
 
-      {/* Overlay de informações do vídeo */}
-      <div className="youtube-info-overlay">
-        <div className="overlay-content">
-          <div className="video-title">
-            <svg className="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="title-text">{dashboard.title}</span>
-          </div>
-
-          {/* Informações específicas do YouTube */}
-          <div className="youtube-meta">
-            {dashboard.youtubeStartTime && (
-              <div className="meta-item">
-                <svg className="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="meta-label">Início:</span>
-                <span className="meta-value">{formatTime(dashboard.youtubeStartTime)}</span>
-              </div>
-            )}
-
-            {dashboard.youtubeEndTime && (
-              <div className="meta-item">
-                <svg className="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="meta-label">Fim:</span>
-                <span className="meta-value">{formatTime(dashboard.youtubeEndTime)}</span>
-              </div>
-            )}
-
-            <div className="meta-item">
-              <svg className="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-              <span className="meta-label">YouTube</span>
-              <span className="meta-value">Vídeo</span>
-            </div>
-          </div>
+      {/* BOTÃO DE TESTE VISÍVEL */}
+      <div className="youtube-test-controls">
+        <button 
+          onClick={activateYouTubeFullscreen}
+          className="test-button"
+          style={{
+            position: 'absolute',
+            top: '10px',
+            right: '10px',
+            zIndex: 1000,
+            background: 'red',
+            color: 'white',
+            border: 'none',
+            padding: '10px',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            fontSize: '12px'
+          }}
+        >
+          🎯 TESTE: Clique Automático
+        </button>
+        
+        <div className="test-info" style={{
+          position: 'absolute',
+          top: '50px',
+          right: '10px',
+          zIndex: 1000,
+          background: 'rgba(0,0,0,0.8)',
+          color: 'white',
+          padding: '10px',
+          borderRadius: '5px',
+          fontSize: '11px',
+          maxWidth: '200px'
+        }}>
+          <div>🎬 Vídeo: {dashboard.title}</div>
+          <div>🆔 ID: {dashboard.youtubeVideoId}</div>
+          <div>📱 Status: {isLoaded ? 'Carregado' : 'Carregando'}</div>
+          <div>🎯 Clique no botão vermelho para testar</div>
         </div>
       </div>
     </div>
   );
-}
-
-/**
- * Formata tempo em segundos para formato legível (ex: 1m 30s)
- */
-function formatTime(seconds: number): string {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-
-  if (hours > 0) {
-    return `${hours}h ${minutes}m ${secs}s`;
-  } else if (minutes > 0) {
-    return `${minutes}m ${secs}s`;
-  } else {
-    return `${secs}s`;
-  }
 }

@@ -12,6 +12,8 @@ export interface TvClient {
   name: string;
   currentDashboardIndex: number;
   isPlaying: boolean;
+  isConnected: boolean;
+  totalDashboards: number;
 }
 
 // Interface para cliente Admin
