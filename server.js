@@ -185,7 +185,9 @@ io.on('connection', (socket) => {
           clientType,
           socket,
           currentDashboardIndex: 0,
-          isPlaying: true
+          isPlaying: true,
+          lastHeartbeat: Date.now(),
+          isConnected: true
         });
         
         // Atualizar status inicial
@@ -198,7 +200,9 @@ io.on('connection', (socket) => {
           id: socket.id,
           name,
           currentDashboardIndex: 0,
-          isPlaying: true
+          isPlaying: true,
+          isConnected: true,
+          totalDashboards: 6
         });
         
         // Enviar lista de TVs para todos os admins
@@ -272,7 +276,9 @@ io.on('connection', (socket) => {
           id: targetTvId,
           currentDashboardIndex: index,
           isPlaying: tvClient.isPlaying,
-          name: tvClient.name
+          name: tvClient.name,
+          isConnected: true,
+          totalDashboards: 6
         });
       } catch (error) {
         console.error('Falha ao mudar dashboard:', error);
@@ -335,7 +341,9 @@ io.on('connection', (socket) => {
           id: targetTvId,
           currentDashboardIndex: tvClient.currentDashboardIndex,
           isPlaying,
-          name: tvClient.name
+          name: tvClient.name,
+          isConnected: true,
+          totalDashboards: 6
         });
       } catch (error) {
         console.error('Falha ao mudar status de reprodução:', error);
@@ -367,7 +375,9 @@ io.on('connection', (socket) => {
             id,
             currentDashboardIndex: client.currentDashboardIndex,
             isPlaying,
-            name: client.name
+            name: client.name,
+            isConnected: true,
+            totalDashboards: 6
           });
         }
       } catch (error) {
@@ -434,14 +444,41 @@ io.on('connection', (socket) => {
           id: socket.id,
           currentDashboardIndex: status.currentDashboardIndex,
           isPlaying: status.isPlaying,
-          name: tvClient.name
+          name: tvClient.name,
+          isConnected: true,
+          totalDashboards: 6
         });
       } catch (error) {
         console.error('Falha ao atualizar status da TV:', error);
       }
     }
+    });
+
+  // Heartbeat dos clientes
+  socket.on('heartbeat', ({ clientType, name, timestamp }) => {
+    try {
+      if (clientType === 'tv' && tvClients.has(socket.id)) {
+        const tvClient = tvClients.get(socket.id);
+        tvClient.lastHeartbeat = timestamp;
+        tvClient.isConnected = true;
+        
+        console.log(`💓 Heartbeat da TV ${name} (${socket.id}) - ${new Date(timestamp).toLocaleTimeString()}`);
+        
+        // Notificar admins sobre o status atualizado
+        emitToAllAdmins('tv-status-updated', {
+          id: socket.id,
+          currentDashboardIndex: tvClient.currentDashboardIndex || 0,
+          isPlaying: tvClient.isPlaying || false,
+          name: tvClient.name,
+          isConnected: true,
+          totalDashboards: 6
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao processar heartbeat:', error);
+    }
   });
-  
+
   // Desconexão do cliente
   socket.on('disconnect', () => {
     console.log('❌ Cliente desconectado:', socket.id);
@@ -456,6 +493,7 @@ io.on('connection', (socket) => {
         const tvClient = tvClients.get(socket.id);
         console.log(`❌ TV ${tvClient.name} (${socket.id}) desconectada, notificando admins...`);
         
+        tvClient.isConnected = false; // Atualizar o campo isConnected
         tvClients.delete(socket.id);
         
         // Notificar admins sobre a desconexão
@@ -487,7 +525,9 @@ function emitTvsList(adminSocket) {
     id: tv.id,
     name: tv.name,
     currentDashboardIndex: tv.currentDashboardIndex,
-    isPlaying: tv.isPlaying
+    isPlaying: tv.isPlaying,
+    isConnected: tv.isConnected || true,
+    totalDashboards: 6 // Valor fixo baseado nos dashboards padrão
   }));
   
   console.log(`📡 Enviando lista de TVs para admin ${adminSocket.id}:`, tvsList);
@@ -506,7 +546,9 @@ function emitTvsListToAllAdmins() {
     id: tv.id,
     name: tv.name,
     currentDashboardIndex: tv.currentDashboardIndex,
-    isPlaying: tv.isPlaying
+    isPlaying: tv.isPlaying,
+    isConnected: tv.isConnected || true,
+    totalDashboards: 6 // Valor fixo baseado nos dashboards padrão
   }));
   
   console.log('📡 Enviando lista de TVs para admins:', tvsList);
@@ -550,4 +592,37 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
   console.log(`Servidor rodando em http://0.0.0.0:${PORT}`);
   console.log(`Servidor aceitando conexões de qualquer IP`);
-}); 
+  
+  // Iniciar verificação de conectividade das TVs
+  startTvConnectivityCheck();
+});
+
+// Sistema de verificação de conectividade das TVs
+function startTvConnectivityCheck() {
+  setInterval(() => {
+    const now = Date.now();
+    const heartbeatTimeout = 60000; // 60 segundos sem heartbeat = desconectado
+    
+    for (const [tvId, tvClient] of tvClients.entries()) {
+      if (tvClient.lastHeartbeat && (now - tvClient.lastHeartbeat) > heartbeatTimeout) {
+        console.log(`⚠️ TV ${tvClient.name} (${tvId}) sem heartbeat por ${Math.round((now - tvClient.lastHeartbeat) / 1000)}s, marcando como desconectada`);
+        
+        // Marcar como desconectada
+        tvClient.isConnected = false;
+        
+        // Notificar admins sobre a mudança de status
+        emitToAllAdmins('tv-status-updated', {
+          id: tvId,
+          currentDashboardIndex: tvClient.currentDashboardIndex || 0,
+          isPlaying: tvClient.isPlaying || false,
+          name: tvClient.name,
+          isConnected: false,
+          totalDashboards: 6
+        });
+        
+        // Marcar como offline no SQLite
+        executeSqlite(setDeviceOffline, [tvId], 'Erro ao marcar TV como offline por timeout');
+      }
+    }
+  }, 30000); // Verificar a cada 30 segundos
+} 

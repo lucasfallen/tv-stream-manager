@@ -11,7 +11,9 @@ export default function AdminPage() {
     setSelectedTvId, 
     socketConnected,
     renameClient,
-    adminName 
+    adminName,
+    restoreTvState,
+    dashboards
   } = useDashboards();
   
   const [activeTab, setActiveTab] = useState<'control' | 'editor'>('control');
@@ -27,6 +29,19 @@ export default function AdminPage() {
     }
   }, [tvsList, selectedTvId, setSelectedTvId]);
 
+  // Função para restaurar o estado de uma TV quando selecionada
+  const handleTvSelection = (tvId: string) => {
+    setSelectedTvId(tvId);
+    
+    // Restaurar o estado da TV do cache
+    const tvState = restoreTvState(tvId);
+    
+    if (tvState) {
+      console.log(`🔄 Estado restaurado para TV ${tvId}:`, tvState);
+      console.log(`📺 Dashboard: ${tvState.currentDashboardIndex + 1}, Status: ${tvState.isPlaying ? 'Reproduzindo' : 'Pausado'}`);
+    }
+  };
+
   const handleNameSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (tempAdminName.trim()) {
@@ -41,6 +56,14 @@ export default function AdminPage() {
   };
 
   const selectedTv = tvsList.find(tv => tv.id === selectedTvId);
+  
+  // Obter o estado atual da TV selecionada
+  const selectedTvState = selectedTvId ? restoreTvState(selectedTvId) : null;
+  
+  // Obter o dashboard que está sendo exibido na TV selecionada
+  const tvDashboard = selectedTvState && dashboards[selectedTvState.currentDashboardIndex] 
+    ? dashboards[selectedTvState.currentDashboardIndex] 
+    : null;
 
   return (
     <div className="layout-dashboard">
@@ -63,6 +86,7 @@ export default function AdminPage() {
               {socketConnected ? 'Conectado' : 'Desconectado'}
             </span>
           </div>
+
 
           {/* Nome do admin */}
           <div className="admin-name-section">
@@ -165,7 +189,7 @@ export default function AdminPage() {
                 <div 
                   key={tv.id}
                   className={`nav-item tv-item ${selectedTvId === tv.id ? 'active' : ''}`}
-                  onClick={() => setSelectedTvId(tv.id)}
+                  onClick={() => handleTvSelection(tv.id)}
                 >
                   <div className="tv-status-indicator">
                     <div className={`status-dot ${tv.isConnected ? 'online' : 'offline'}`}></div>
@@ -232,6 +256,11 @@ export default function AdminPage() {
                           <span className="tv-dashboard-info">
                             Dashboard {selectedTv.currentDashboardIndex + 1} de {selectedTv.totalDashboards || 0}
                           </span>
+                          {selectedTvState && (
+                            <span className={`playback-status ${selectedTvState.isPlaying ? 'playing' : 'paused'}`}>
+                              {selectedTvState.isPlaying ? '▶️ Reproduzindo' : '⏸️ Pausado'}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -249,7 +278,11 @@ export default function AdminPage() {
 
               {/* Controles do Dashboard */}
               <div className="dashboard-controls-section">
-                <DashboardControls showPreview={showPreview} />
+                <DashboardControls 
+                  showPreview={showPreview} 
+                  tvDashboard={tvDashboard || undefined}
+                  tvDashboardIndex={selectedTvState?.currentDashboardIndex}
+                />
               </div>
             </div>
           ) : (

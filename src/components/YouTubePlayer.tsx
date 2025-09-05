@@ -6,9 +6,10 @@ import '../styles/YouTubePlayer.css';
 interface YouTubePlayerProps {
   dashboard: Dashboard;
   onError?: () => void;
+  autoFullscreen?: boolean;
 }
 
-export default function YouTubePlayer({ dashboard, onError }: YouTubePlayerProps) {
+export default function YouTubePlayer({ dashboard, onError, autoFullscreen = true }: YouTubePlayerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -32,13 +33,9 @@ export default function YouTubePlayer({ dashboard, onError }: YouTubePlayerProps
 
   // Função para ativar fullscreen do YouTube
   const activateYouTubeFullscreen = () => {
-    console.log('🎬 INICIANDO FULLSCREEN AUTOMÁTICO MULTI-ESTRATÉGIA');
-    
     // ESTRATÉGIA 1: Simular tecla F na página principal
     setTimeout(() => {
       try {
-        console.log('🎯 ESTRATÉGIA 1: Simulando tecla F na página principal...');
-        
         // Simular o pressionamento da tecla F
         const fKeyEvent = new KeyboardEvent('keydown', {
           key: 'f',
@@ -52,18 +49,15 @@ export default function YouTubePlayer({ dashboard, onError }: YouTubePlayerProps
         
         // Disparar o evento de tecla
         document.dispatchEvent(fKeyEvent);
-        console.log('✅ Tecla F simulada na página principal!');
         
       } catch (error) {
-        console.log('❌ Erro ao simular tecla F na página:', error);
+        // Silenciar erro
       }
     }, 2000); // 2 segundos
     
     // ESTRATÉGIA 2: Simular tecla F no iframe
     setTimeout(() => {
       try {
-        console.log('🎯 ESTRATÉGIA 2: Simulando tecla F no iframe...');
-        
         if (iframeRef.current) {
           const iframe = iframeRef.current;
           const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -80,66 +74,49 @@ export default function YouTubePlayer({ dashboard, onError }: YouTubePlayerProps
             });
             
             iframeDoc.dispatchEvent(fKeyEvent);
-            console.log('✅ Tecla F simulada no iframe!');
           }
         }
         
       } catch (error) {
-        console.log('❌ Erro ao simular tecla F no iframe:', error);
+        // Silenciar erro
       }
     }, 3000); // 3 segundos
     
     // ESTRATÉGIA 3: Fullscreen da página via API
     setTimeout(() => {
       try {
-        console.log('🎯 ESTRATÉGIA 3: Ativando fullscreen da página via API...');
-        
         if (document.documentElement.requestFullscreen) {
           document.documentElement.requestFullscreen();
-          console.log('✅ Fullscreen da página ativado via API!');
         } else if ((document.documentElement as any).webkitRequestFullscreen) {
           (document.documentElement as any).webkitRequestFullscreen();
-          console.log('✅ Fullscreen da página ativado via webkit!');
         } else if ((document.documentElement as any).msRequestFullscreen) {
           (document.documentElement as any).msRequestFullscreen();
-          console.log('✅ Fullscreen da página ativado via ms!');
         }
-        
       } catch (error) {
-        console.log('❌ Erro ao ativar fullscreen da página:', error);
+        // Silenciar erro
       }
-    }, 4000); // 4 segundos
+    }, 4000);
     
     // ESTRATÉGIA 4: Fullscreen do iframe via API
     setTimeout(() => {
       try {
-        console.log('🎯 ESTRATÉGIA 4: Ativando fullscreen do iframe via API...');
-        
         if (iframeRef.current) {
-          const iframe = iframeRef.current;
-          
-          if (iframe.requestFullscreen) {
-            iframe.requestFullscreen();
-            console.log('✅ Fullscreen do iframe ativado via API!');
-          } else if ((iframe as any).webkitRequestFullscreen) {
-            (iframe as any).webkitRequestFullscreen();
-            console.log('✅ Fullscreen do iframe ativado via webkit!');
-          } else if ((iframe as any).msRequestFullscreen) {
-            (iframe as any).msRequestFullscreen();
-            console.log('✅ Fullscreen do iframe ativado via ms!');
+          if (iframeRef.current.requestFullscreen) {
+            iframeRef.current.requestFullscreen();
+          } else if ((iframeRef.current as any).webkitRequestFullscreen) {
+            (iframeRef.current as any).webkitRequestFullscreen();
+          } else if ((iframeRef.current as any).msRequestFullscreen) {
+            (iframeRef.current as any).msRequestFullscreen();
           }
         }
-        
       } catch (error) {
-        console.log('❌ Erro ao ativar fullscreen do iframe:', error);
+        // Silenciar erro
       }
-    }, 5000); // 5 segundos
+    }, 5000);
     
     // ESTRATÉGIA 5: Tentar via postMessage para o YouTube
     setTimeout(() => {
       try {
-        console.log('🎯 ESTRATÉGIA 5: Tentando fullscreen via postMessage...');
-        
         if (iframeRef.current) {
           const iframe = iframeRef.current;
           
@@ -154,24 +131,21 @@ export default function YouTubePlayer({ dashboard, onError }: YouTubePlayerProps
             setTimeout(() => {
               try {
                 iframe.contentWindow?.postMessage(JSON.stringify(command), '*');
-                console.log(`✅ Comando ${index + 1} enviado:`, command);
               } catch (error) {
-                console.log(`❌ Erro no comando ${index + 1}:`, error);
+                // Silenciar erro
               }
             }, index * 300);
           });
         }
         
       } catch (error) {
-        console.log('❌ Erro no postMessage:', error);
+        // Silenciar erro
       }
     }, 6000); // 6 segundos
     
     // ESTRATÉGIA 6: Simular clique no botão de fullscreen do YouTube
     setTimeout(() => {
       try {
-        console.log('🎯 ESTRATÉGIA 6: Procurando botão de fullscreen no YouTube...');
-        
         if (iframeRef.current) {
           const iframe = iframeRef.current;
           const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -188,13 +162,10 @@ export default function YouTubePlayer({ dashboard, onError }: YouTubePlayerProps
             fullscreenSelectors.forEach((selector) => {
               const elements = iframeDoc.querySelectorAll(selector);
               if (elements.length > 0) {
-                console.log(`🎯 Botão de fullscreen encontrado: ${selector}`);
-                
                 try {
                   (elements[0] as HTMLElement).click();
-                  console.log(`✅ Clique no botão de fullscreen executado: ${selector}`);
                 } catch (clickError) {
-                  console.log(`❌ Erro ao clicar no botão: ${selector}`, clickError);
+                  // Silenciar erro
                 }
               }
             });
@@ -202,7 +173,7 @@ export default function YouTubePlayer({ dashboard, onError }: YouTubePlayerProps
         }
         
       } catch (error) {
-        console.log('❌ Erro ao procurar botão de fullscreen:', error);
+        // Silenciar erro
       }
     }, 7000); // 7 segundos
   };
@@ -212,7 +183,9 @@ export default function YouTubePlayer({ dashboard, onError }: YouTubePlayerProps
     setLoadError(false);
     
     // Tentar ativar fullscreen do YouTube após carregar
-    activateYouTubeFullscreen();
+    if (autoFullscreen) {
+      activateYouTubeFullscreen();
+    }
   };
 
   const handleError = () => {
@@ -293,49 +266,6 @@ export default function YouTubePlayer({ dashboard, onError }: YouTubePlayerProps
         allowFullScreen
         style={{ display: isLoaded && !loadError ? 'block' : 'none' }}
       />
-
-      {/* BOTÃO DE TESTE VISÍVEL */}
-      <div className="youtube-test-controls">
-        <button 
-          onClick={activateYouTubeFullscreen}
-          className="test-button"
-          style={{
-            position: 'absolute',
-            top: '10px',
-            right: '10px',
-            zIndex: 1000,
-            background: 'red',
-            color: 'white',
-            border: 'none',
-            padding: '10px',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            fontSize: '12px'
-          }}
-        >
-          🎯 TESTE: Fullscreen Multi-Estratégia
-        </button>
-        
-        <div className="test-info" style={{
-          position: 'absolute',
-          top: '50px',
-          right: '10px',
-          zIndex: 1000,
-          background: 'rgba(0,0,0,0.8)',
-          color: 'white',
-          padding: '10px',
-          borderRadius: '5px',
-          fontSize: '11px',
-          maxWidth: '250px'
-        }}>
-          <div>🎬 Vídeo: {dashboard.title}</div>
-          <div>🆔 ID: {dashboard.youtubeVideoId}</div>
-          <div>📱 Status: {isLoaded ? 'Carregado' : 'Carregando'}</div>
-          <div>🎯 Clique no botão vermelho para testar</div>
-          <div>⌨️ 6 estratégias diferentes de fullscreen</div>
-          <div>⏱️ Executa automaticamente em sequência</div>
-        </div>
-      </div>
     </div>
   );
 }

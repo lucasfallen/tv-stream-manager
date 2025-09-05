@@ -1,13 +1,16 @@
 import { useDashboards } from '../contexts/DashboardContext';
+import { Dashboard } from '../types/Dashboard';
 import { detectContentType } from '../utils/youtubeUtils';
 import YouTubePlayer from './YouTubePlayer';
 import '../styles/DashboardControls.css';
 
 interface DashboardControlsProps {
   showPreview?: boolean;
+  tvDashboard?: Dashboard; // Dashboard que está sendo exibido na TV
+  tvDashboardIndex?: number; // Índice do dashboard na TV
 }
 
-export default function DashboardControls({ showPreview = false }: DashboardControlsProps) {
+export default function DashboardControls({ showPreview = false, tvDashboard, tvDashboardIndex }: DashboardControlsProps) {
   const { 
     dashboards,
     currentIndex,
@@ -16,21 +19,39 @@ export default function DashboardControls({ showPreview = false }: DashboardCont
     previousDashboard,
     isPlaying,
     setIsPlaying,
-    currentDashboard
+    currentDashboard,
+    selectedTvId,
+    restoreTvState
   } = useDashboards();
+  
+  // Determinar qual dashboard mostrar na prévia
+  const previewDashboard = tvDashboard || currentDashboard;
+  
+  // Determinar qual índice usar no seletor
+  // Se uma TV está selecionada, usar o índice da TV, senão usar o currentIndex geral
+  const selectedTvState = selectedTvId ? restoreTvState(selectedTvId) : null;
+  const selectorIndex = selectedTvState ? selectedTvState.currentDashboardIndex : currentIndex;
   
   return (
     <div className={`dashboard-controls ${showPreview ? 'with-preview' : ''}`}>
       {/* Header com informações atuais */}
       <div className="controls-header">
         <div className="current-dashboard-info">
-          <h3 className="current-title">{currentDashboard?.title || 'Nenhum dashboard selecionado'}</h3>
+          <h3 className="current-title">
+            {tvDashboard 
+              ? `${tvDashboard.title} (TV)`
+              : (currentDashboard?.title || 'Nenhum dashboard selecionado')
+            }
+          </h3>
           <div className="current-meta">
             <span className="dashboard-counter">
-              {dashboards.length > 0 ? `${currentIndex + 1} de ${dashboards.length}` : '0 dashboards'}
+              {tvDashboard 
+                ? `${(tvDashboardIndex || 0) + 1} de ${dashboards.length} (TV)`
+                : (dashboards.length > 0 ? `${currentIndex + 1} de ${dashboards.length}` : '0 dashboards')
+              }
             </span>
             <span className="duration-info">
-              {currentDashboard ? `${currentDashboard.duration}s` : '0s'}
+              {previewDashboard ? `${previewDashboard.duration}s` : '0s'}
             </span>
           </div>
         </div>
@@ -60,7 +81,7 @@ export default function DashboardControls({ showPreview = false }: DashboardCont
           
           <div className="dashboard-selector">
             <select 
-              value={currentIndex}
+              value={selectorIndex}
               onChange={(e) => goToDashboard(Number(e.target.value))}
               className="input dashboard-select"
               disabled={dashboards.length === 0}
@@ -98,9 +119,8 @@ export default function DashboardControls({ showPreview = false }: DashboardCont
         <div className="playback-controls">
           <button 
             onClick={() => setIsPlaying(!isPlaying)}
-            className={`btn btn-lg ${isPlaying ? 'btn-danger' : 'btn-success'} play-btn`}
-            disabled={dashboards.length === 0}
-            title={isPlaying ? 'Pausar rotação' : 'Iniciar rotação'}
+            className={`btn ${isPlaying ? 'btn-warning' : 'btn-success'}`}
+            title={isPlaying ? 'Pausar reprodução' : 'Iniciar reprodução'}
           >
             {isPlaying ? (
               <>
@@ -115,7 +135,7 @@ export default function DashboardControls({ showPreview = false }: DashboardCont
                 <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <polygon points="5,3 19,12 5,21" />
                 </svg>
-                Iniciar
+                Reproduzir
               </>
             )}
           </button>
@@ -123,23 +143,23 @@ export default function DashboardControls({ showPreview = false }: DashboardCont
       </div>
 
       {/* Informações detalhadas */}
-      {currentDashboard && (
+      {previewDashboard && (
         <div className="dashboard-details">
           <div className="detail-grid">
             <div className="detail-item">
               <span className="detail-label">Tipo:</span>
-              <span className={`detail-value content-type ${currentDashboard.contentType || 'dashboard'}`}>
-                {currentDashboard.contentType === 'youtube' ? (
+              <span className={`detail-value content-type ${previewDashboard.contentType || 'dashboard'}`}>
+                {previewDashboard.contentType === 'youtube' ? (
                   <>
                     <svg className="type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 002 2v8a2 2 0 002 2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 00-2-2H5a2 2 0 002 2v8a2 2 0 002 2z" />
                     </svg>
                     Vídeo do YouTube
                   </>
                 ) : (
                   <>
                     <svg className="type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 00-2 2v8a2 2 0 00-2-2zm0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                     Dashboard
                   </>
@@ -148,18 +168,18 @@ export default function DashboardControls({ showPreview = false }: DashboardCont
             </div>
             <div className="detail-item">
               <span className="detail-label">URL:</span>
-              <span className="detail-value url-value" title={currentDashboard.url}>
-                {currentDashboard.url}
+              <span className="detail-value url-value" title={previewDashboard.url}>
+                {previewDashboard.url}
               </span>
             </div>
             <div className="detail-item">
               <span className="detail-label">Duração:</span>
-              <span className="detail-value">{currentDashboard.duration} segundos</span>
+              <span className="detail-value">{previewDashboard.duration} segundos</span>
             </div>
-            {currentDashboard.contentType === 'youtube' && currentDashboard.youtubeVideoId && (
+            {previewDashboard.contentType === 'youtube' && previewDashboard.youtubeVideoId && (
               <div className="detail-item">
                 <span className="detail-label">Vídeo ID:</span>
-                <span className="detail-value video-id">{currentDashboard.youtubeVideoId}</span>
+                <span className="detail-value video-id">{previewDashboard.youtubeVideoId}</span>
               </div>
             )}
             <div className="detail-item">
@@ -173,33 +193,41 @@ export default function DashboardControls({ showPreview = false }: DashboardCont
       )}
       
       {/* Prévia do dashboard */}
-      {showPreview && currentDashboard && (
+      {showPreview && previewDashboard && (
         <div className="dashboard-preview">
           <div className="preview-header">
-            <h4>Prévia do Dashboard</h4>
-            <span className="preview-info">Visualização em tempo real</span>
+            <h4>
+              {tvDashboard ? 'Prévia da TV' : 'Prévia do Painel'}
+            </h4>
+            <span className="preview-info">
+              {tvDashboard 
+                ? `Visualização em tempo real - ${tvDashboard.title}`
+                : `Visualização do painel - ${previewDashboard.title}`
+              }
+            </span>
           </div>
           <div className="preview-container">
             {/* Renderização condicional baseada no tipo de conteúdo */}
             {(() => {
-              const contentType = currentDashboard.contentType || detectContentType(currentDashboard.url);
+              const contentType = previewDashboard.contentType || detectContentType(previewDashboard.url);
               
               if (contentType === 'youtube') {
                 return (
                   <div className="youtube-preview">
                     <YouTubePlayer 
-                      dashboard={currentDashboard} 
+                      dashboard={previewDashboard} 
                       onError={() => {
                         console.log('Erro na prévia do YouTube');
                       }}
+                      autoFullscreen={false} // Desabilitar fullscreen na prévia do admin
                     />
                   </div>
                 );
               } else {
                 return (
                   <iframe 
-                    src={currentDashboard.url} 
-                    title={`Prévia de ${currentDashboard.title}`}
+                    src={previewDashboard.url} 
+                    title={`Prévia de ${previewDashboard.title}`}
                     className="preview-frame"
                     sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
                     allow="fullscreen"

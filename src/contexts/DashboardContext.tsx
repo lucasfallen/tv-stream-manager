@@ -29,6 +29,9 @@ interface DashboardContextType {
   goToDashboard: (index: number) => void;
   renameClient: (name: string) => void;
   connectSocket: (clientType: 'tv' | 'admin', name: string) => void;
+  // Funções de cache
+  saveTvState: (tvId: string, dashboardIndex: number, playing: boolean) => void;
+  restoreTvState: (tvId: string) => { currentDashboardIndex: number; isPlaying: boolean };
 }
 
 // Props do provider
@@ -134,27 +137,52 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
       });
     }
   }, [currentIndex, isPlaying, isAdmin]);
+
+  // Função para salvar o estado de uma TV no cache
+  const saveTvState = useCallback((tvId: string, dashboardIndex: number, playing: boolean) => {
+    const tvStates = JSON.parse(localStorage.getItem('tvStates') || '{}');
+    tvStates[tvId] = {
+      currentDashboardIndex: dashboardIndex,
+      isPlaying: playing,
+      lastUpdated: Date.now()
+    };
+    localStorage.setItem('tvStates', JSON.stringify(tvStates));
+  }, []);
   
+  // Função para restaurar o estado de uma TV do cache
+  const restoreTvState = useCallback((tvId: string) => {
+    const tvStates = JSON.parse(localStorage.getItem('tvStates') || '{}');
+    const state = tvStates[tvId];
+    if (state) {
+      return state;
+    }
+    return { currentDashboardIndex: 0, isPlaying: true }; // Valor padrão
+  }, []);
+
   // Efeito para configurar o socket e listeners
   useEffect(() => {
     // Verificar se estamos na rota de admin
     const isAdminRoute = window.location.pathname.includes('/admin');
     setIsAdmin(isAdminRoute);
     
-    // Só conecta automaticamente se não houver conexão previamente estabelecida
-    if (!socketService.isConnected()) {
-      const clientName = isAdminRoute 
-        ? localStorage.getItem('adminName') || `Admin-${Math.random().toString(36).substring(2, 6)}`
-        : localStorage.getItem('tvName') || `TV-${Math.random().toString(36).substring(2, 6)}`;
-      
-      if (isAdminRoute && !localStorage.getItem('adminName')) {
-        localStorage.setItem('adminName', clientName);
+    // Para TVs, só conectar se já tiver um nome configurado
+    if (isAdminRoute) {
+      // Admin sempre conecta automaticamente
+      if (!socketService.isConnected()) {
+        const clientName = localStorage.getItem('adminName') || `Admin-${Math.random().toString(36).substring(2, 6)}`;
+        
+        if (!localStorage.getItem('adminName')) {
+          localStorage.setItem('adminName', clientName);
+        }
+        
+        socketService.connect('admin', clientName);
       }
-      
-      socketService.connect(
-        isAdminRoute ? 'admin' : 'tv',
-        clientName
-      );
+    } else {
+      // Para TVs, só conectar se já tiver nome configurado
+      const tvName = localStorage.getItem('tvName');
+      if (tvName && !socketService.isConnected()) {
+        socketService.connect('tv', tvName);
+      }
     }
     
     const setupListeners = () => {
@@ -315,6 +343,8 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
         if (selectedTvId) {
           // Enviar para a TV selecionada
           socketService.emitCurrentDashboardChangeTo(selectedTvId, newIndex);
+          // Salvar no cache
+          saveTvState(selectedTvId, newIndex, isPlaying);
         } else {
           // Enviar para todas as TVs
           socketService.emitCurrentDashboardChangeAll(newIndex);
@@ -323,7 +353,7 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
       
       return newIndex;
     });
-  }, [dashboards.length, isAdmin, selectedTvId]);
+  }, [dashboards.length, isAdmin, selectedTvId, isPlaying, saveTvState]);
   
   const previousDashboard = useCallback(() => {
     setCurrentIndex((prevIndex) => {
@@ -334,6 +364,8 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
         if (selectedTvId) {
           // Enviar para a TV selecionada
           socketService.emitCurrentDashboardChangeTo(selectedTvId, newIndex);
+          // Salvar no cache
+          saveTvState(selectedTvId, newIndex, isPlaying);
         } else {
           // Enviar para todas as TVs
           socketService.emitCurrentDashboardChangeAll(newIndex);
@@ -342,7 +374,7 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
       
       return newIndex;
     });
-  }, [dashboards.length, isAdmin, selectedTvId]);
+  }, [dashboards.length, isAdmin, selectedTvId, isPlaying, saveTvState]);
   
   const goToDashboard = useCallback((index: number) => {
     setCurrentIndex(index);
@@ -352,12 +384,14 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
       if (selectedTvId) {
         // Enviar para a TV selecionada
         socketService.emitCurrentDashboardChangeTo(selectedTvId, index);
+        // Salvar no cache
+        saveTvState(selectedTvId, index, isPlaying);
       } else {
         // Enviar para todas as TVs
         socketService.emitCurrentDashboardChangeAll(index);
       }
     }
-  }, [isAdmin, selectedTvId]);
+  }, [isAdmin, selectedTvId, isPlaying, saveTvState]);
   
   // Efeito para notificar TVs quando o status de reprodução muda
   useEffect(() => {
@@ -406,7 +440,10 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     previousDashboard,
     goToDashboard,
     renameClient,
-    connectSocket
+    connectSocket,
+    // Funções de cache
+    saveTvState,
+    restoreTvState
   };
   
   return (

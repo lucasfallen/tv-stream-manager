@@ -125,35 +125,6 @@ export default function DashboardViewer() {
           dashboard={currentDashboard} 
           onError={() => setIframeError(true)}
         />
-        
-        {/* Overlay de informações de reprodução */}
-        <div className="dashboard-info-overlay">
-          <div className="overlay-content">
-            <div className="dashboard-title">
-              <svg className="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 002 2v8a2 2 0 002 2z" />
-              </svg>
-              <span className="title-text">{currentDashboard.title}</span>
-            </div>
-            
-            {isPlaying && (
-              <div className="playback-info">
-                <div className="playback-status">
-                  <div className="status-dot playing"></div>
-                  <span className="status-text">Reproduzindo</span>
-                </div>
-                <div className="next-indicator">
-                  <svg className="indicator-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span className="indicator-text">
-                    Próximo em {currentDashboard.duration}s
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
       </div>
     );
   }
