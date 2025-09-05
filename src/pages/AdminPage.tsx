@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useDashboards } from '../contexts/DashboardContext';
 import DashboardControls from '../components/DashboardControls';
 import DashboardEditor from '../components/DashboardEditor';
+import DeviceEditor from '../components/DeviceEditor';
+import { Device, DeviceType } from '../types/Device';
 import '../styles/AdminPage.css';
 
 export default function AdminPage() {
@@ -10,8 +12,6 @@ export default function AdminPage() {
     selectedTvId, 
     setSelectedTvId, 
     socketConnected,
-    renameClient,
-    adminName,
     restoreTvState,
     dashboards
   } = useDashboards();
@@ -19,8 +19,7 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'control' | 'editor'>('control');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [tempAdminName, setTempAdminName] = useState(adminName || '');
+  const [isDeviceEditorOpen, setIsDeviceEditorOpen] = useState(false);
 
   useEffect(() => {
     // Auto-select first TV if none selected
@@ -42,23 +41,41 @@ export default function AdminPage() {
     }
   };
 
-  const handleNameSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (tempAdminName.trim()) {
-      renameClient(tempAdminName.trim());
-      setIsEditingName(false);
-    }
-  };
-
-  const handleNameCancel = () => {
-    setTempAdminName(adminName || '');
-    setIsEditingName(false);
-  };
 
   const selectedTv = tvsList.find(tv => tv.id === selectedTvId);
   
   // Obter o estado atual da TV selecionada
   const selectedTvState = selectedTvId ? restoreTvState(selectedTvId) : null;
+
+  // Função para salvar alterações do dispositivo
+  const handleDeviceSave = (deviceId: string, data: any) => {
+    console.log('Salvando alterações do dispositivo:', deviceId, data);
+    // TODO: Implementar salvamento no servidor
+    // Por enquanto, apenas fecha o editor
+    setIsDeviceEditorOpen(false);
+  };
+
+  // Converter TvClient para Device para o editor
+  const selectedDevice: Device | null = selectedTv ? {
+    id: selectedTv.id,
+    name: selectedTv.name,
+    type: 'tv' as DeviceType, // Por enquanto, assumir que é TV
+    specs: {
+      screenSize: '',
+      resolution: '',
+      operatingSystem: '',
+      browser: '',
+      processor: '',
+      memory: '',
+      storage: '',
+      network: ''
+    },
+    notes: '',
+    currentDashboardIndex: selectedTv.currentDashboardIndex,
+    isPlaying: selectedTv.isPlaying,
+    isConnected: selectedTv.isConnected,
+    totalDashboards: selectedTv.totalDashboards
+  } : null;
   
   // Obter o dashboard que está sendo exibido na TV selecionada
   const tvDashboard = selectedTvState && dashboards[selectedTvState.currentDashboardIndex] 
@@ -88,46 +105,6 @@ export default function AdminPage() {
           </div>
 
 
-          {/* Nome do admin */}
-          <div className="admin-name-section">
-            {isEditingName ? (
-              <form onSubmit={handleNameSubmit} className="name-edit-form">
-                <input
-                  type="text"
-                  value={tempAdminName}
-                  onChange={(e) => setTempAdminName(e.target.value)}
-                  className="input input-sm"
-                  placeholder="Nome do admin"
-                  autoFocus
-                />
-                <div className="name-actions">
-                  <button type="submit" className="btn btn-sm btn-success">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                      <path d="M5 13l4 4L19 7" />
-                    </svg>
-                  </button>
-                  <button type="button" onClick={handleNameCancel} className="btn btn-sm btn-secondary">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                      <path d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className="admin-name-display">
-                <span className="admin-name">{adminName || 'Admin'}</span>
-                <button 
-                  onClick={() => setIsEditingName(true)}
-                  className="edit-name-btn"
-                  title="Editar nome"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                    <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-              </div>
-            )}
-          </div>
 
           {/* Botão de toggle da sidebar */}
           <button
@@ -262,9 +239,23 @@ export default function AdminPage() {
                             </span>
                           )}
                         </div>
+                        <div className="device-info">
+                          <span className="device-type">📺 TV</span>
+                          <span className="device-id">ID: {selectedTv.id.substring(0, 8)}...</span>
+                        </div>
                       </div>
                     </div>
                     <div className="tv-actions">
+                      <button 
+                        onClick={() => setIsDeviceEditorOpen(true)}
+                        className="btn btn-secondary"
+                        title="Editar dispositivo"
+                      >
+                        <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                          <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Editar
+                      </button>
                       <button 
                         onClick={() => setShowPreview(!showPreview)}
                         className={`btn ${showPreview ? 'btn-secondary' : 'btn-primary'}`}
@@ -308,6 +299,16 @@ export default function AdminPage() {
         <div 
           className={`sidebar-overlay ${!sidebarCollapsed ? 'open' : ''}`}
           onClick={() => setSidebarCollapsed(true)}
+        />
+      )}
+
+      {/* Editor de Dispositivo */}
+      {selectedDevice && (
+        <DeviceEditor
+          device={selectedDevice}
+          isOpen={isDeviceEditorOpen}
+          onClose={() => setIsDeviceEditorOpen(false)}
+          onSave={handleDeviceSave}
         />
       )}
     </div>
